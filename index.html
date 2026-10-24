@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1f5f4a">
+<meta name="robots" content="noindex">
+<title>Mewanagar Voter Slip</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ============ LOCK SCREEN (only if a PIN is set) ============ -->
+<div id="lock" class="lock" hidden>
+  <div class="lockbox">
+    <div class="appname">Mewanagar Voter Slip</div>
+    <p>Enter PIN</p>
+    <input id="pinIn" type="password" inputmode="numeric" maxlength="8" autocomplete="off">
+    <button class="btn primary wide" id="pinGo">Unlock</button>
+    <div class="err" id="pinErr"></div>
+    <button class="link" id="pinForgot">Forgot PIN?</button>
+  </div>
+</div>
+
+<!-- ============ HOME / SEARCH ============ -->
+<section id="vHome" class="view">
+  <header class="bar">
+    <div>
+      <div class="appname">Mewanagar Voter Slip</div>
+      <div class="sub" id="countLine">No voter list yet</div>
+    </div>
+    <button class="iconbtn" id="openSettings" aria-label="Settings">⚙</button>
+  </header>
+
+  <div class="printerbar">
+    <span class="dot" id="pDot"></span>
+    <span class="pname" id="pName">Printer not connected</span>
+    <button class="btn small" id="btnConnect">Connect Printer</button>
+  </div>
+  <div class="note warn" id="btWarn" hidden></div>
+
+  <div class="searchwrap">
+    <div class="search">
+      <input id="q" type="search" enterkeyhint="search" autocomplete="off" autocorrect="off" spellcheck="false"
+             placeholder="वोटर का नाम / EPIC / SN खोजें">
+      <button class="clear" id="btnClear" aria-label="Clear search" hidden>✕</button>
+    </div>
+    <div class="filters">
+      <select id="fWard"><option value="">All wards</option></select>
+      <select id="fBooth"><option value="">All booths</option></select>
+    </div>
+  </div>
+
+  <div id="emptyData" class="emptydata" hidden>
+    <p>No voter list on this phone yet.</p>
+    <button class="btn primary wide" id="btnImport1">Import Voter List (Excel / CSV)</button>
+    <p class="small">The list stays only on this phone. Nothing is uploaded.</p>
+  </div>
+
+  <div id="recentBox" class="recent" hidden>
+    <div class="label">Recent searches</div>
+    <div id="recent" class="chips"></div>
+  </div>
+
+  <div class="count" id="resCount"></div>
+  <div id="results" class="results"></div>
+  <div class="morehint" id="moreHint"></div>
+  <div class="homefoot">
+    <button class="btn wide" id="btnImport2">Import / Update Voter List</button>
+  </div>
+</section>
+
+<!-- ============ SLIP PREVIEW ============ -->
+<section id="vSlip" class="view" hidden>
+  <header class="bar">
+    <button class="iconbtn" id="slipBack" aria-label="Back">←</button>
+    <div class="appname">Slip Preview</div>
+    <span></span>
+  </header>
+  <div class="slipmeta" id="slipMeta"></div>
+  <div class="note warn" id="slipWarn" hidden></div>
+  <div class="paperwrap"><div class="paper" id="slipPaper"></div></div>
+  <div class="slipsrc" id="slipSrc"></div>
+  <div class="actions">
+    <button class="btn primary big wide" id="btnPrintSlip">PRINT SLIP</button>
+    <button class="btn wide" id="btnBackSearch">BACK TO SEARCH</button>
+  </div>
+</section>
+
+<!-- ============ SETTINGS ============ -->
+<section id="vSettings" class="view" hidden>
+  <header class="bar">
+    <button class="iconbtn" id="setBack" aria-label="Back">←</button>
+    <div class="appname">Settings</div>
+    <span></span>
+  </header>
+
+  <div class="card">
+    <h3>Printer</h3>
+    <div class="row"><span class="dot" id="pDot2"></span><b id="pName2">Not connected</b></div>
+    <div class="btnrow">
+      <button class="btn primary" id="sConnect">Connect Printer</button>
+      <button class="btn" id="sReconnect">Reconnect</button>
+      <button class="btn" id="sForget">Forget</button>
+    </div>
+    <div class="field"><label>Paper width</label>
+      <div class="seg" id="segPaper"><button data-v="58">58 mm</button><button data-v="80">80 mm</button></div></div>
+    <div class="field"><label>Dots per line <span class="hint">(58 mm = 384, 80 mm = 576 for most printers)</span></label>
+      <div class="seg" id="segDots"><button data-v="384">384</button><button data-v="432">432</button><button data-v="512">512</button><button data-v="576">576</button></div></div>
+    <div class="field"><label>Text size</label>
+      <div class="seg" id="segSize"><button data-v="n">Normal</button><button data-v="l">Large</button></div></div>
+    <div class="field"><label>Print method <span class="hint">(change only if Test Print shows garbage)</span></label>
+      <div class="seg" id="segMode"><button data-v="gsv0">Standard (GS v 0)</button><button data-v="escstar">Older printers (ESC *)</button></div></div>
+    <div class="field"><label>Sending speed <span class="hint">(choose Slow if the slip prints broken or stops halfway)</span></label>
+      <div class="seg" id="segSpeed"><button data-v="fast">Fast</button><button data-v="normal">Normal</button><button data-v="slow">Slow</button></div></div>
+    <div class="field"><label>Paper feed after slip</label>
+      <div class="seg" id="segFeed"><button data-v="1">Short</button><button data-v="3">Normal</button><button data-v="5">Long</button></div></div>
+    <div class="field"><label>Auto cut <span class="hint">(only printers with a cutter)</span></label>
+      <div class="seg" id="segCut"><button data-v="off">Off</button><button data-v="on">On</button></div></div>
+    <button class="btn wide" id="btnTest">TEST PRINT</button>
+    <div class="small" id="testHint">Test Print shows Hindi letters and two edge marks. If an edge mark is missing, change "Dots per line".</div>
+  </div>
+
+  <div class="card">
+    <h3>Voter list</h3>
+    <div id="dataInfo" class="small"></div>
+    <div class="btnrow">
+      <button class="btn primary" id="sImport">Import / Update Voter List</button>
+    </div>
+    <div id="mapCard" hidden>
+      <h4>Column mapping</h4>
+      <div class="small">Check that each field uses the right column, then tap Apply.</div>
+      <div id="mapBody"></div>
+    </div>
+    <div class="btnrow">
+      <button class="btn" id="sBackup">Backup list</button>
+      <button class="btn" id="sRestore">Restore backup</button>
+      <button class="btn danger" id="sDelete">Delete list</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Security</h3>
+    <div class="small" id="pinState"></div>
+    <div class="btnrow">
+      <button class="btn" id="sPin">Set PIN</button>
+      <button class="btn" id="sPinOff" hidden>Remove PIN</button>
+    </div>
+  </div>
+
+  <div class="card small">
+    <h3>About</h3>
+    <p>Works offline. The voter list is stored only in this phone's Chrome app data. It is never uploaded.
+    Prints to Bluetooth Low Energy (BLE) thermal printers using ESC/POS. Hindi is printed as an image, so the printer does not need a Hindi font.</p>
+    <p id="verLine"></p>
+  </div>
+</section>
+
+<input type="file" id="fileIn" accept=".xlsx,.xlsm,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv,text/comma-separated-values" hidden>
+<input type="file" id="restoreIn" accept=".json,application/json" hidden>
+
+<div class="toast" id="toast"></div>
+<div class="modalbg" id="modalBg"><div class="modal">
+  <h3 id="mTitle"></h3><div id="mText"></div>
+  <div class="btnrow end" id="mBtns"></div>
+</div></div>
+<div class="busy" id="busy" hidden><div class="busybox"><div class="spin"></div><div id="busyText">Printing…</div></div></div>
+
+<script src="xlsx.js"></script>
+<script src="printer.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
